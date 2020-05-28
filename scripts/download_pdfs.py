@@ -21,7 +21,9 @@ df = pd.read_csv("data/proposicoes-2020.csv", sep=';')
 df = df[df['ultimoStatus_dataHora'] > start]
 df = df[df['ultimoStatus_dataHora'] < end]
 
-df = df[df['siglaTipo'].isin(['PEC','PL','PLP','MPV','PLV','PDL','PRC'])]
+df = df[df['siglaTipo'].isin(['PEC', 'PL', 'PLP',
+                              'MPV','PLV','PDL',
+                              'PRC', 'REQ', 'RIC'])]
 
 files_downloaded = 0
 files_in_directory = 0
