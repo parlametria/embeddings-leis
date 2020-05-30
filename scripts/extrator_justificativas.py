@@ -3,6 +3,7 @@ import textract
 import re
 import pandas as pd
 from sys import argv
+from tqdm import tqdm
 
 
 def extract_text(path, files):
@@ -11,7 +12,7 @@ def extract_text(path, files):
         'texto_anterior': [],
         'justificativa': []
     }
-    for file_name in files:
+    for file_name in tqdm(files):
         text = textract.process(path + '/' + file_name)
         text = text.decode('utf-8')
         previous, justification = split_text(text)
