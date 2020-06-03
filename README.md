@@ -1,1 +1,35 @@
-# embeddings-leis
+# Embeddings-leis
+
+Usamos word embeddings para analisar as proposições legislativas do Congresso Nacional. 
+
+## Executando os scripts
+
+### Criando ambiente virtual
+
+Para evitar conflitos entre as versões das bibliotecas Python:
+
+```
+python -m venv environment
+source environment/bin/activate
+```
+
+### Instalando dependências
+
+```
+pip install -r requirements.txt
+```
+
+### Extraindo justificativas 
+
+Após o download dos arquivos das proposições:
+
+```
+python scripts/extrator_justificativas.py --files <path>/*.pdf > justificativas.csv
+```
+
+Caso não queira o nome das colunas no resultado, use a flag `--no-header`.
+
+O arquivo resultante conterá as seguintes colunas:
+* `arquivo`: Nome do arquivo pdf cujo conteúdo foi extraído
+* `texto_anterior`: Texto anterior à justificativa
+* `justificativa`: A justificativa extraída.
