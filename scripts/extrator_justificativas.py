@@ -1,13 +1,14 @@
 import textract
 import re
 import argparse
+import os
 from numpy import nan
 from tqdm import tqdm
 from sys import stderr
 
 
 NEW_LINE = '\n'
-HEADER = 'arquivo;texto_anterior;justificativa'
+HEADER = 'arquivo;id;numero;tipo;texto_anterior;justificativa'
 REGEX = r'\s*(justificativa|justificação)\s*'
 
 
@@ -18,16 +19,25 @@ def extract_text(file_name):
     return text
 
 
-def get_justifications(files, header):
+def handle_file_name(file_name):
+    id, numero, tipo = file_name[:-4].split('_')
+    return(id, numero, tipo)
+
+
+def get_justifications(path, header):
     justified_files = 0
     if header:
         print(HEADER)
-    for file_name in tqdm(files):
-        text = extract_text(file_name)
+    for file_name in tqdm(os.listdir(path)):
+        file_path = os.path.join(path, file_name)
+        text = extract_text(file_path)
         file_name = file_name.split('/')[-1]
+        id, numero, tipo = handle_file_name(file_name)
         previous, justification = split_text(text)
         justified_files += 0 if justification is nan else 1
-        print(f'{file_name};"{previous}";"{justification}"')
+        print(
+            f'{file_name};{id};{numero};{tipo};"{previous}";"{justification}"'
+        )
     print_console(
         f'{justified_files} arquivos tiveram justificativa encontrada.'
     )
@@ -50,9 +60,9 @@ def handle_args():
         description='Extrai as justificativas dos PDFs de proposições'
     )
     parser.add_argument(
-        '--files', dest='files', nargs='*',
+        '--source', dest='source',
         required="True",
-        help='Lista de arquivos'
+        help='Diretório com os PDFs'
     )
     parser.add_argument(
         '--no-header', dest="no_header",
@@ -65,10 +75,10 @@ def handle_args():
 
 def main():
     args = handle_args()
-    files = args.files
+    path = args.source
     header = not args.no_header
     print_console('Extraindo justificativas.')
-    get_justifications(files, header)
+    get_justifications(path, header)
 
 
 if __name__ == "__main__":
