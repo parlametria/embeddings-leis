@@ -5,6 +5,7 @@ import os
 from numpy import nan
 from tqdm import tqdm
 from sys import stderr
+from pathlib import Path
 
 
 NEW_LINE = '\n'
@@ -21,7 +22,7 @@ def extract_text(file_name):
 
 
 def handle_file_name(file_name):
-    id, numero, tipo = file_name[:-4].split('_')
+    id, numero, tipo = Path(file_name).stem.split('_')
     return(id, numero, tipo)
 
 
