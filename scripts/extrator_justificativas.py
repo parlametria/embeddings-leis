@@ -2,22 +2,24 @@ import textract
 import re
 import argparse
 import os
+import pandas as pd
 from numpy import nan
 from tqdm import tqdm
-from sys import stderr
 from pathlib import Path
 
 
 NEW_LINE = '\n'
-HEADER = 'arquivo|id|numero|tipo|"texto_anterior"|"justificativa"'
 REGEX = r'\s*(justificativa|justificação)\s*'
 
 
 def extract_text(file_name):
-    text = textract.process(file_name)
-    text = text.decode('utf-8')
-    text = text.replace(NEW_LINE, ' ')
-    text = text.strip()
+    try:
+        text = textract.process(file_name)
+        text = text.decode('utf-8')
+        text = text.replace(NEW_LINE, ' ')
+        text = text.strip()
+    except textract.exceptions.ShellError:
+        text = ''
     return text
 
 
@@ -27,27 +29,30 @@ def handle_file_name(file_name):
 
 
 def get_justifications(path, header):
+    data = {
+        'file_name': [],
+        'id': [],
+        'numero': [],
+        'tipo': [],
+        'texto_anterior': [],
+        'justificativa': []
+    }
     justified_files = 0
-    if header:
-        print(HEADER)
     for file_name in tqdm(os.listdir(path)):
         file_path = os.path.join(path, file_name)
-        try:
-            file_name = file_name.split('/')[-1]
-            id, numero, tipo = handle_file_name(file_name)
-            text = extract_text(file_path)
-            previous, justification = split_text(text)
-            justified_files += 0 if justification is nan else 1
-            print(
-                f'{file_name}|{id}|{numero}|{tipo}|"{previous}"|"{justification}"'
-            )
-        except textract.exceptions.ShellError:
-            print(
-                f'{file_name}|{id}|{numero}|{tipo}|"{nan}"|"{nan}"'
-            )
-    print_console(
-        f'{justified_files} arquivos tiveram justificativa encontrada.'
-    )
+        file_name = file_name.split('/')[-1]
+        id, numero, tipo = handle_file_name(file_name)
+        text = extract_text(file_path)
+        previous, justification = split_text(text)
+        justified_files += 0 if justification is nan else 1
+        data['file_name'].append(file_name)
+        data['id'].append(id)
+        data['numero'].append(numero)
+        data['tipo'].append(tipo)
+        data['texto_anterior'].append(previous)
+        data['justificativa'].append(justification)
+    print(f'{justified_files} arquivos tiveram justificativa encontrada.')
+    return data
 
 
 def split_text(text):
@@ -66,10 +71,6 @@ def is_not_empty(text):
     return bool(text and text.strip())
 
 
-def print_console(*args, **kwargs):
-    print(*args, file=stderr, **kwargs)
-
-
 def handle_args():
     parser = argparse.ArgumentParser(
         description='Extrai as justificativas dos PDFs de proposições'
@@ -80,9 +81,13 @@ def handle_args():
         help='Diretório com os PDFs'
     )
     parser.add_argument(
-        '--no-header', dest="no_header",
+        '--no-header', dest='no_header',
         action='store_true',
         help='Não incluir cabeçalho no arquivo resultante'
+    )
+    parser.add_argument(
+        dest='file_name',
+        help='Nome do arquivo com justificativas'
     )
     args = parser.parse_args()
     return args
@@ -92,8 +97,11 @@ def main():
     args = handle_args()
     path = args.source
     header = not args.no_header
-    print_console('Extraindo justificativas.')
-    get_justifications(path, header)
+    result_file = args.file_name
+    print('Extraindo justificativas.')
+    justificativas = get_justifications(path, header)
+    df = pd.DataFrame(justificativas)
+    df.to_csv(result_file, sep=';', index=False, header=header)
 
 
 if __name__ == "__main__":
