@@ -61,8 +61,4 @@ for year in range(start, end+1):
     else:
         df = pd.concat([pd.read_csv(url_base, sep=';', dtype=dtypes), df])
 
-print(df.iloc[:5, 14])
-print(df.keys())
-print(df.dtypes)
-# df = df.astype(dtype= {})
 df.to_csv("data/propositions.csv", sep='|', line_terminator='\n')
