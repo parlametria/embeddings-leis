@@ -19,6 +19,19 @@ source environment/bin/activate
 pip install -r requirements.txt
 ```
 
+### Baixando os csv's com as proposições
+
+```
+python scripts/concatenate_datasets.py --start=<starting_year> --end=<ending_year>
+```
+
+Importante notar que, por algum motivo, a leitura do dataset baixado por esse script funciona somente se for usado os parâmetros sep='|' e lineterminator='\n', como demonstrado abaixo. 
+
+```
+import pandas as pd
+df = pd.read_csv("data/propositions.csv", sep='|', lineterminator="\n")
+```
+
 ### Extraindo justificativas 
 
 Após o download dos arquivos das proposições:
