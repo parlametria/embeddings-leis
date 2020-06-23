@@ -39,7 +39,6 @@ def main():
     print(df.shape)
     df = subset_dataset(df, start, end)
     print(df.shape)
-    # df = df.dropna(subset=['urlInteiroTeor'])
 
     files_downloaded = 0
     files_in_directory = 0
@@ -54,17 +53,12 @@ def main():
         if i % 1000 == 0:
             print(f'{i} / {df.shape} files downloaded')
 
-        # if f'{id_prop}_{proposal_num}_{proposal_type}.pdf' in already_downloaded:
-        #     files_in_directory += 1
-        #     continue
-
         if url is np.nan:
             invalid_urls += 1
             continue
 
         try:
             response = requests.get(url)
-            # print(file_type)
         except requests.exceptions.ConnectionError:
             conn_error.append(url)
 
@@ -74,9 +68,8 @@ def main():
                 f.write(response.content)
                 files_downloaded += 1
                 already_downloaded.add(f'{id_prop}_{proposal_num}_{proposal_type}.pdf')
-            # time.sleep(0.5)
+
         except:
-            print("NoneType on response")
             nonetype += 1
 
     print(f'Connection Error on these files: {conn_error}')
