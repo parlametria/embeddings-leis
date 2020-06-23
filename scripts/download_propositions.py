@@ -23,6 +23,8 @@ def subset_dataset(df, start, end):
     df = df[df['siglaTipo'].isin(['PEC', 'PL', 'PLP',
                                   'MPV', 'PLV', 'PDL',
                                   'PRC', 'REQ', 'RIC'])]
+
+    df = df.reset_index(drop=True)
     return df
 
 def main():
