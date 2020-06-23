@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 NEW_LINE = '\n'
-REGEX = r'\s*(justificativa|justificação)\s*'
+REGEX = r'\s*(Justificativa|JUSTIFICATIVA|Justificação|JUSTIFICAÇÃO)\s*'
 
 
 def extract_text(file_name):
@@ -18,9 +18,10 @@ def extract_text(file_name):
         text = text.decode('utf-8')
         text = text.replace(NEW_LINE, ' ')
         text = text.strip()
-    except textract.exceptions.ShellError:
-        text = ''
-    return text
+        result = (text, 'Sucesso')
+    except Exception:
+        result = ('', 'Falhou')
+    return result
 
 
 def handle_file_name(file_name):
@@ -29,36 +30,34 @@ def handle_file_name(file_name):
 
 
 def get_justifications(path, header):
-    data = {
-        'file_name': [],
-        'id': [],
-        'numero': [],
-        'tipo': [],
-        'texto_anterior': [],
-        'justificativa': []
-    }
+    df = pd.DataFrame()
     justified_files = 0
     for file_name in tqdm(os.listdir(path)):
         file_path = os.path.join(path, file_name)
         file_name = file_name.split('/')[-1]
         id, numero, tipo = handle_file_name(file_name)
-        text = extract_text(file_path)
+        text, status = extract_text(file_path)
         previous, justification = split_text(text)
         justified_files += 0 if justification is nan else 1
-        data['file_name'].append(file_name)
-        data['id'].append(id)
-        data['numero'].append(numero)
-        data['tipo'].append(tipo)
-        data['texto_anterior'].append(previous)
-        data['justificativa'].append(justification)
+        data = {
+            'file_name': [file_name],
+            'id': [id],
+            'numero': [numero],
+            'tipo': [tipo],
+            'texto_anterior': [previous],
+            'justificativa': [justification],
+            'status_extracao': [status]
+        }
+        row = pd.DataFrame(data)
+        df = pd.concat([df, row], axis=0, ignore_index=True)
     print(f'{justified_files} arquivos tiveram justificativa encontrada.')
-    return data
+    return df
 
 
 def split_text(text):
-    pattern = re.compile(REGEX, flags=re.I)
+    pattern = re.compile(REGEX)
     parts = re.split(pattern, text)
-    if len(parts) > 1 and is_not_empty(parts[0]) and is_not_empty(parts[2]):
+    if len(parts) > 1 and is_not_empty(parts[0]) and is_not_empty(parts[-1]):
         result = (parts[0], parts[2])
     elif len(parts) == 1 and is_not_empty(parts[0]):
         result = (parts[0], nan)
@@ -100,8 +99,7 @@ def main():
     result_file = args.file_name
     print('Extraindo justificativas.')
     justificativas = get_justifications(path, header)
-    df = pd.DataFrame(justificativas)
-    df.to_csv(result_file, sep=';', index=False, header=header)
+    justificativas.to_csv(result_file, sep=';', index=False, header=header)
 
 
 if __name__ == "__main__":
