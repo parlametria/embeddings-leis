@@ -7,6 +7,7 @@ import numpy as np
 import argparse
 import filetype
 from pathlib import Path
+from IPython import embed
 
 def handle_args():
     parser = argparse.ArgumentParser(description='Download propositions')
@@ -24,7 +25,6 @@ def subset_dataset(df, start, end):
                                   'MPV', 'PLV', 'PDL',
                                   'PRC', 'REQ', 'RIC'])]
 
-    df = df.reset_index(drop=True)
     return df
 
 def main():
@@ -36,8 +36,8 @@ def main():
         os.mkdir(out_dir)
     already_downloaded = set(os.listdir(out_dir))
     df = pd.read_csv("data/propositions.csv", sep=';')
-    print(df.shape)
     df = subset_dataset(df, start, end)
+    print("here?")
     print(df.shape)
 
     files_downloaded = 0

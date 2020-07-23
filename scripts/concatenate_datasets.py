@@ -1,3 +1,4 @@
+import os
 import sys
 import pandas as pd
 import argparse
@@ -13,12 +14,27 @@ end = args.end
 if end < start:
     raise ValueError("Start date should be smaller than end date")
     sys.exit()
+
 df = None
+
+print(os.listdir('.'))
+
 for year in range(start, end):
     url_base = f'https://dadosabertos.camara.leg.br/arquivos/proposicoes/csv/proposicoes-{year}.csv'
     if df is None:
         df = pd.read_csv(url_base, sep=';')
+        df = df[['id', 'siglaTipo', 'numero', "ultimoStatus_dataHora",
+                 'ano', 'codTipo', 'descricaoTipo',
+                 'ementa', 'ementaDetalhada', 'keywords',
+                 'dataApresentacao', 'urlInteiroTeor']]
     else:
-        df = pd.concat([pd.read_csv(url_base, sep=';'), df])
+        aux = pd.read_csv(url_base, sep=';')
+        aux = aux[['id', 'siglaTipo', 'numero', "ultimoStatus_dataHora",
+                 'ano', 'codTipo', 'descricaoTipo',
+                 'ementa', 'ementaDetalhada', 'keywords',
+                 'dataApresentacao', 'urlInteiroTeor']]
+        df = pd.concat([aux, df])
 
-df.to_csv("data/propositions.csv", sep=';')
+    print(df.shape)
+
+df.to_csv("data/proposicoes_final.csv", sep=';')
