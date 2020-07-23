@@ -24,7 +24,7 @@ pip install -r requirements.txt
 Após o download dos arquivos das proposições:
 
 ```
-python scripts/extrator_justificativas.py --source <path> > justificativas.csv
+python scripts/extrator_justificativas.py --source <path> justificativas.csv
 ```
 
 Caso não queira o nome das colunas no resultado, use a flag `--no-header`.
